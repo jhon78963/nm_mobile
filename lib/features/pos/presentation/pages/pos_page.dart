@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nm_mobile/core/auth/permission_util.dart';
+import 'package:nm_mobile/core/routing/app_routes.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_notifier.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_state.dart';
 import 'package:nm_mobile/features/pos/presentation/notifiers/pos_notifier.dart';
@@ -54,6 +57,14 @@ class _PosPageState extends ConsumerState<PosPage> {
           orElse: () => null,
         );
     return user != null && user.warehouseId == null;
+  }
+
+  bool get _canViewSales {
+    final user = ref.read(authNotifierProvider).maybeMap(
+          authenticated: (s) => s.user,
+          orElse: () => null,
+        );
+    return userHasAnyPermission(user, ['sale.getAll', 'sale.get']);
   }
 
   Future<void> _performScan(String raw) async {
@@ -141,14 +152,31 @@ class _PosPageState extends ConsumerState<PosPage> {
                     ),
                   ),
                   if (pos.lastSaleId != null)
-                    TextButton.icon(
-                      onPressed: pos.isLoading ? null : _printTicket,
-                      icon: const Icon(Icons.print_outlined, size: 16),
-                      label: const Text('Imprimir ticket'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: primary,
-                        backgroundColor: primary.withValues(alpha: 0.08),
-                      ),
+                    Wrap(
+                      spacing: 4,
+                      children: [
+                        TextButton.icon(
+                          onPressed: pos.isLoading ? null : _printTicket,
+                          icon: const Icon(Icons.print_outlined, size: 16),
+                          label: const Text('Imprimir ticket'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: primary,
+                            backgroundColor: primary.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        if (_canViewSales)
+                          TextButton.icon(
+                            onPressed: pos.isLoading
+                                ? null
+                                : () => context.go(AppRoutes.sales),
+                            icon: const Icon(Icons.receipt_long_outlined, size: 16),
+                            label: const Text('Ver en ventas'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: primary,
+                              backgroundColor: primary.withValues(alpha: 0.08),
+                            ),
+                          ),
+                      ],
                     ),
                 ],
               ),

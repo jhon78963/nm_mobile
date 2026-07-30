@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nm_mobile/core/routing/app_routes.dart';
+import 'package:nm_mobile/core/network/unauthorized_handler.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_notifier.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_state.dart';
 import 'package:nm_mobile/features/auth/presentation/pages/auth_splash_page.dart';
 import 'package:nm_mobile/features/auth/presentation/pages/login_page.dart';
-import 'package:nm_mobile/features/finances/presentation/pages/finance_placeholder_page.dart';
+import 'package:nm_mobile/features/cash_movements/presentation/pages/cash_register_page.dart';
 import 'package:nm_mobile/features/pos/presentation/pages/pos_page.dart';
 import 'package:nm_mobile/features/sales/presentation/pages/sales_list_page.dart';
 import 'package:nm_mobile/features/shell/presentation/pages/app_shell_page.dart';
@@ -27,7 +28,7 @@ class _AuthRefreshListenable extends ChangeNotifier {
 GoRouter appRouter(Ref ref) {
   final refreshListenable = _AuthRefreshListenable(ref);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: refreshListenable,
     redirect: (context, state) {
@@ -44,7 +45,7 @@ GoRouter appRouter(Ref ref) {
           if (location == AppRoutes.login || location == AppRoutes.splash) {
             return defaultAuthenticatedRoute(authenticated.user);
           }
-          return null;
+          return routePermissionRedirect(authenticated.user, location);
         },
         unauthenticated: (_) =>
             location == AppRoutes.login ? null : AppRoutes.login,
@@ -82,15 +83,24 @@ GoRouter appRouter(Ref ref) {
             path: AppRoutes.cashMovements,
             name: 'cash-movements',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: FinancePlaceholderPage(
-                title: 'Control de Caja',
-                subtitle: 'Movimientos diarios — próximamente.',
-                icon: Icons.account_balance_wallet_outlined,
-              ),
+              child: CashRegisterPage(),
             ),
           ),
         ],
       ),
     ],
   );
+
+  UnauthorizedHandler.onUnauthorized = () async {
+    await ref.read(authNotifierProvider.notifier).logout();
+    router.go(AppRoutes.login);
+  };
+
+  ref.onDispose(() {
+    if (UnauthorizedHandler.onUnauthorized != null) {
+      UnauthorizedHandler.onUnauthorized = null;
+    }
+  });
+
+  return router;
 }
