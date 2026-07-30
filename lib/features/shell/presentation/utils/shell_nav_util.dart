@@ -23,9 +23,7 @@ List<ShellNavItem> visibleNavItems(User? user) {
 }
 
 String defaultAuthenticatedRoute(User user) {
-  final items = visibleNavItems(user);
-  if (items.isNotEmpty) return items.first.route;
-
+  // POS sigue siendo la pantalla inicial aunque el menú sea Ventas → POS → Caja.
   if (userHasPermission(user, 'pos.checkout')) return AppRoutes.pos;
   if (userHasAnyPermission(user, ['sale.getAll', 'sale.get'])) {
     return AppRoutes.sales;
@@ -33,6 +31,9 @@ String defaultAuthenticatedRoute(User user) {
   if (userHasPermission(user, 'cashflow.getDaily')) {
     return AppRoutes.cashMovements;
   }
+
+  final items = visibleNavItems(user);
+  if (items.isNotEmpty) return items.first.route;
 
   return AppRoutes.pos;
 }

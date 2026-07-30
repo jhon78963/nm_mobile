@@ -24,13 +24,10 @@ final class CashMovementRemoteDataSourceImpl
 
   @override
   Future<CashDailyReport> loadDailyReport(String dateIso) async {
+    // Match Angular: ?date=YYYY-MM-DD&filters[]=CASH&filters[]=YAPE&filters[]=CARD
+    final filterQuery = _filters.map((f) => 'filters[]=$f').join('&');
     final response = await _dio.get<dynamic>(
-      '$_base/daily',
-      queryParameters: {
-        'date': dateIso,
-        'filters[]': _filters,
-      },
-      options: Options(listFormat: ListFormat.multiCompatible),
+      '$_base/daily?date=$dateIso&$filterQuery',
     );
     return adaptCashDailyReport(response.data);
   }

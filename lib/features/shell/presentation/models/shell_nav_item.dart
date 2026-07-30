@@ -17,16 +17,16 @@ class ShellNavItem {
 
   static const financesItems = [
     ShellNavItem(
-      label: 'POS',
-      route: '/finances/pos',
-      icon: Icons.point_of_sale_outlined,
-      permission: 'pos.checkout',
-    ),
-    ShellNavItem(
       label: 'Ventas',
       route: '/finances/sales',
       icon: Icons.receipt_long_outlined,
       permissions: ['sale.getAll', 'sale.get'],
+    ),
+    ShellNavItem(
+      label: 'POS',
+      route: '/finances/pos',
+      icon: Icons.point_of_sale_outlined,
+      permission: 'pos.checkout',
     ),
     ShellNavItem(
       label: 'Caja',
