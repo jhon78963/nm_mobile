@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:nm_mobile/core/network/api_constants.dart';
 import 'package:nm_mobile/core/network/unauthorized_handler.dart';
 
-/// Logs the user out and redirects to login when the session expires (401).
+/// Logs the user out when the API returns 401 on an authenticated request.
 final class UnauthorizedInterceptor extends Interceptor {
   const UnauthorizedInterceptor();
 
   static const _publicPaths = [
     ApiConstants.loginPath,
+    ApiConstants.mePath,
   ];
 
   @override
@@ -15,7 +16,9 @@ final class UnauthorizedInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (err.response?.statusCode == 401 && !_isPublicRequest(err)) {
+    if (err.response?.statusCode == 401 &&
+        !_isPublicRequest(err) &&
+        _hadAuthorizationHeader(err)) {
       await _handleUnauthorized();
     }
     handler.next(err);
@@ -24,6 +27,13 @@ final class UnauthorizedInterceptor extends Interceptor {
   bool _isPublicRequest(DioException err) {
     final path = err.requestOptions.path;
     return _publicPaths.any(path.contains);
+  }
+
+  /// Only logout when the request was sent with a token that the server rejected.
+  /// If no token was attached, it is a client-side issue — do not kick the user out.
+  bool _hadAuthorizationHeader(DioException err) {
+    final auth = err.requestOptions.headers['Authorization'];
+    return auth is String && auth.startsWith('Bearer ') && auth.length > 7;
   }
 
   Future<void> _handleUnauthorized() async {

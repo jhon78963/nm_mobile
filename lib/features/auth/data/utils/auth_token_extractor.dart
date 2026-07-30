@@ -1,15 +1,18 @@
 import 'package:dio/dio.dart';
 
-/// Extracts the access token from a Laravel login response.
+/// Extracts the Sanctum access token from a Laravel login response.
+///
+/// The backend returns tokens in HttpOnly cookies (`access_token`, `refresh_token`)
+/// and does not include them in the JSON body (MeResource only).
 ///
 /// Priority:
 /// 1. JSON body fields: `token`, `access_token`, `accessToken`
-/// 2. `Set-Cookie` header: `access_token` (current Laravel backend behavior)
+/// 2. `Set-Cookie` header: `access_token=...`
 String? extractAccessToken(Response<dynamic> response) {
   final fromJson = _extractFromJson(response.data);
   if (fromJson != null) return fromJson;
 
-  return _extractFromCookies(response.headers['set-cookie']);
+  return _extractFromCookies(response.headers);
 }
 
 String? _extractFromJson(dynamic data) {
@@ -23,20 +26,23 @@ String? _extractFromJson(dynamic data) {
   return null;
 }
 
-String? _extractFromCookies(dynamic rawCookies) {
-  if (rawCookies == null) return null;
-
-  final cookies = rawCookies is List ? rawCookies : [rawCookies];
+String? _extractFromCookies(Headers headers) {
+  final cookies = headers['set-cookie'];
+  if (cookies == null || cookies.isEmpty) return null;
 
   for (final cookie in cookies) {
-    if (cookie is! String) continue;
-
-    final nameValue = cookie.split(';').first.trim();
-    if (!nameValue.startsWith('access_token=')) continue;
-
-    final token = nameValue.substring('access_token='.length);
-    if (token.isNotEmpty) return token;
+    final token = _parseAccessTokenCookie(cookie);
+    if (token != null) return token;
   }
 
   return null;
+}
+
+String? _parseAccessTokenCookie(String cookie) {
+  final nameValue = cookie.split(';').first.trim();
+  const prefix = 'access_token=';
+  if (!nameValue.startsWith(prefix)) return null;
+
+  final token = Uri.decodeComponent(nameValue.substring(prefix.length));
+  return token.isNotEmpty ? token : null;
 }
