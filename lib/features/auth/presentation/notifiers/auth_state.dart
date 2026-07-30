@@ -8,6 +8,9 @@ sealed class AuthState with _$AuthState {
   /// Initial state before any interaction.
   const factory AuthState.initial() = _AuthStateInitial;
 
+  /// Session restore in progress on app startup.
+  const factory AuthState.sessionLoading() = _AuthStateSessionLoading;
+
   /// Login request in flight.
   const factory AuthState.loading() = _AuthStateLoading;
 

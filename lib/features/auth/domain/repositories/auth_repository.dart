@@ -6,6 +6,8 @@ abstract interface class AuthRepository {
   /// Throws an [Exception] with a human-readable message on failure.
   Future<User> login(String username, String password);
 
+  Future<User> getMe();
+
   Future<void> logout();
 
   /// Returns true if a valid session token exists in secure storage.

@@ -26,6 +26,12 @@ final class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<User> getMe() async {
+    final dto = await remoteDataSource.getMe();
+    return dto.toDomain();
+  }
+
+  @override
   Future<void> logout() async {
     await secureStorage.delete(key: ApiConstants.accessTokenKey);
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_notifier.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_state.dart';
+import 'package:nm_mobile/features/shell/presentation/utils/shell_nav_util.dart';
 
 // Width at which the split-panel tablet layout activates.
 const double _kTabletBreakpoint = 600;
@@ -38,8 +40,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authNotifierProvider, (_, state) {
       state.maybeMap(
-        authenticated: (_) {
-          // TODO: Navigate to dashboard — context.go('/dashboard');
+        authenticated: (authenticated) {
+          final route = defaultAuthenticatedRoute(authenticated.user);
+          context.go(route);
         },
         orElse: () {},
       );

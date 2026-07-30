@@ -55,11 +55,12 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AuthStateInitial value)?  initial,TResult Function( _AuthStateLoading value)?  loading,TResult Function( _AuthStateAuthenticated value)?  authenticated,TResult Function( _AuthStateUnauthenticated value)?  unauthenticated,TResult Function( _AuthStateFailure value)?  failure,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AuthStateInitial value)?  initial,TResult Function( _AuthStateSessionLoading value)?  sessionLoading,TResult Function( _AuthStateLoading value)?  loading,TResult Function( _AuthStateAuthenticated value)?  authenticated,TResult Function( _AuthStateUnauthenticated value)?  unauthenticated,TResult Function( _AuthStateFailure value)?  failure,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _AuthStateInitial() when initial != null:
-return initial(_that);case _AuthStateLoading() when loading != null:
+return initial(_that);case _AuthStateSessionLoading() when sessionLoading != null:
+return sessionLoading(_that);case _AuthStateLoading() when loading != null:
 return loading(_that);case _AuthStateAuthenticated() when authenticated != null:
 return authenticated(_that);case _AuthStateUnauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case _AuthStateFailure() when failure != null:
@@ -81,11 +82,12 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AuthStateInitial value)  initial,required TResult Function( _AuthStateLoading value)  loading,required TResult Function( _AuthStateAuthenticated value)  authenticated,required TResult Function( _AuthStateUnauthenticated value)  unauthenticated,required TResult Function( _AuthStateFailure value)  failure,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AuthStateInitial value)  initial,required TResult Function( _AuthStateSessionLoading value)  sessionLoading,required TResult Function( _AuthStateLoading value)  loading,required TResult Function( _AuthStateAuthenticated value)  authenticated,required TResult Function( _AuthStateUnauthenticated value)  unauthenticated,required TResult Function( _AuthStateFailure value)  failure,}){
 final _that = this;
 switch (_that) {
 case _AuthStateInitial():
-return initial(_that);case _AuthStateLoading():
+return initial(_that);case _AuthStateSessionLoading():
+return sessionLoading(_that);case _AuthStateLoading():
 return loading(_that);case _AuthStateAuthenticated():
 return authenticated(_that);case _AuthStateUnauthenticated():
 return unauthenticated(_that);case _AuthStateFailure():
@@ -103,11 +105,12 @@ return failure(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AuthStateInitial value)?  initial,TResult? Function( _AuthStateLoading value)?  loading,TResult? Function( _AuthStateAuthenticated value)?  authenticated,TResult? Function( _AuthStateUnauthenticated value)?  unauthenticated,TResult? Function( _AuthStateFailure value)?  failure,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AuthStateInitial value)?  initial,TResult? Function( _AuthStateSessionLoading value)?  sessionLoading,TResult? Function( _AuthStateLoading value)?  loading,TResult? Function( _AuthStateAuthenticated value)?  authenticated,TResult? Function( _AuthStateUnauthenticated value)?  unauthenticated,TResult? Function( _AuthStateFailure value)?  failure,}){
 final _that = this;
 switch (_that) {
 case _AuthStateInitial() when initial != null:
-return initial(_that);case _AuthStateLoading() when loading != null:
+return initial(_that);case _AuthStateSessionLoading() when sessionLoading != null:
+return sessionLoading(_that);case _AuthStateLoading() when loading != null:
 return loading(_that);case _AuthStateAuthenticated() when authenticated != null:
 return authenticated(_that);case _AuthStateUnauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case _AuthStateFailure() when failure != null:
@@ -128,10 +131,11 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( User user)?  authenticated,TResult Function()?  unauthenticated,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  sessionLoading,TResult Function()?  loading,TResult Function( User user)?  authenticated,TResult Function()?  unauthenticated,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthStateInitial() when initial != null:
-return initial();case _AuthStateLoading() when loading != null:
+return initial();case _AuthStateSessionLoading() when sessionLoading != null:
+return sessionLoading();case _AuthStateLoading() when loading != null:
 return loading();case _AuthStateAuthenticated() when authenticated != null:
 return authenticated(_that.user);case _AuthStateUnauthenticated() when unauthenticated != null:
 return unauthenticated();case _AuthStateFailure() when failure != null:
@@ -153,10 +157,11 @@ return failure(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( User user)  authenticated,required TResult Function()  unauthenticated,required TResult Function( String message)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  sessionLoading,required TResult Function()  loading,required TResult Function( User user)  authenticated,required TResult Function()  unauthenticated,required TResult Function( String message)  failure,}) {final _that = this;
 switch (_that) {
 case _AuthStateInitial():
-return initial();case _AuthStateLoading():
+return initial();case _AuthStateSessionLoading():
+return sessionLoading();case _AuthStateLoading():
 return loading();case _AuthStateAuthenticated():
 return authenticated(_that.user);case _AuthStateUnauthenticated():
 return unauthenticated();case _AuthStateFailure():
@@ -174,10 +179,11 @@ return failure(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( User user)?  authenticated,TResult? Function()?  unauthenticated,TResult? Function( String message)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  sessionLoading,TResult? Function()?  loading,TResult? Function( User user)?  authenticated,TResult? Function()?  unauthenticated,TResult? Function( String message)?  failure,}) {final _that = this;
 switch (_that) {
 case _AuthStateInitial() when initial != null:
-return initial();case _AuthStateLoading() when loading != null:
+return initial();case _AuthStateSessionLoading() when sessionLoading != null:
+return sessionLoading();case _AuthStateLoading() when loading != null:
 return loading();case _AuthStateAuthenticated() when authenticated != null:
 return authenticated(_that.user);case _AuthStateUnauthenticated() when unauthenticated != null:
 return unauthenticated();case _AuthStateFailure() when failure != null:
@@ -213,6 +219,38 @@ int get hashCode => runtimeType.hashCode;
 @override
 String toString() {
   return 'AuthState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _AuthStateSessionLoading implements AuthState {
+  const _AuthStateSessionLoading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthStateSessionLoading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.sessionLoading()';
 }
 
 

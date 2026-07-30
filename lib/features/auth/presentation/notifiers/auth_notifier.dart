@@ -7,7 +7,27 @@ part 'auth_notifier.g.dart';
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
   @override
-  AuthState build() => const AuthState.initial();
+  AuthState build() {
+    Future.microtask(restoreSession);
+    return const AuthState.sessionLoading();
+  }
+
+  Future<void> restoreSession() async {
+    final repository = ref.read(authRepositoryProvider);
+
+    if (!await repository.hasActiveSession()) {
+      state = const AuthState.unauthenticated();
+      return;
+    }
+
+    try {
+      final user = await repository.getMe();
+      state = AuthState.authenticated(user);
+    } catch (_) {
+      await repository.logout();
+      state = const AuthState.unauthenticated();
+    }
+  }
 
   Future<void> login(String username, String password) async {
     state = const AuthState.loading();

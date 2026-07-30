@@ -7,6 +7,8 @@ import 'package:nm_mobile/features/auth/data/utils/dio_exception_mapper.dart';
 
 abstract interface class AuthRemoteDataSource {
   Future<AuthLoginResult> login(String username, String password);
+
+  Future<MeResponseDto> getMe();
 }
 
 final class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -32,6 +34,20 @@ final class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final user = MeResponseDto.fromResponseData(response.data);
       return AuthLoginResult(user: user, accessToken: accessToken);
+    } on DioException catch (error) {
+      throw mapDioException(error);
+    }
+  }
+
+  @override
+  Future<MeResponseDto> getMe() async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiConstants.mePath,
+        data: const {},
+      );
+
+      return MeResponseDto.fromResponseData(response.data);
     } on DioException catch (error) {
       throw mapDioException(error);
     }
