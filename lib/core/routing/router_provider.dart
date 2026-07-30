@@ -7,6 +7,7 @@ import 'package:nm_mobile/features/auth/presentation/notifiers/auth_state.dart';
 import 'package:nm_mobile/features/auth/presentation/pages/auth_splash_page.dart';
 import 'package:nm_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:nm_mobile/features/finances/presentation/pages/finance_placeholder_page.dart';
+import 'package:nm_mobile/features/pos/presentation/pages/pos_page.dart';
 import 'package:nm_mobile/features/shell/presentation/pages/app_shell_page.dart';
 import 'package:nm_mobile/features/shell/presentation/utils/shell_nav_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -66,11 +67,7 @@ GoRouter appRouter(Ref ref) {
             path: AppRoutes.pos,
             name: 'pos',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: FinancePlaceholderPage(
-                title: 'Punto de Venta',
-                subtitle: 'Módulo POS — próximamente.',
-                icon: Icons.point_of_sale_outlined,
-              ),
+              child: PosPage(),
             ),
           ),
           GoRoute(
