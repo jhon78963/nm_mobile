@@ -18,7 +18,20 @@ part 'router_provider.g.dart';
 
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(this._ref) {
-    _ref.listen(authNotifierProvider, (_, _) => notifyListeners());
+    _ref.listen(authNotifierProvider, (prev, next) {
+      // Only refresh when the auth status meaningfully changes to avoid
+      // spurious redirects from transient loading states during tab switches.
+      final wasStable = prev?.maybeMap(
+            loading: (_) => false,
+            orElse: () => true,
+          ) ??
+          false;
+      final isStable = next.maybeMap(
+        loading: (_) => false,
+        orElse: () => true,
+      );
+      if (wasStable || isStable) notifyListeners();
+    });
   }
 
   final Ref _ref;
@@ -92,8 +105,11 @@ GoRouter appRouter(Ref ref) {
   );
 
   UnauthorizedHandler.onUnauthorized = () async {
+    // Calling logout() changes auth state → unauthenticated.
+    // The refreshListenable picks that up and triggers the redirect to /login
+    // automatically — no need for an explicit router.go() here, which could
+    // race with an in-flight GoRouter navigation (e.g. a tab switch).
     await ref.read(authNotifierProvider.notifier).logout();
-    router.go(AppRoutes.login);
   };
 
   ref.onDispose(() {
