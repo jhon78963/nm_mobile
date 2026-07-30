@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_notifier.dart';
 import 'package:nm_mobile/features/auth/presentation/notifiers/auth_state.dart';
 
+// Width at which the split-panel tablet layout activates.
+const double _kTabletBreakpoint = 600;
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -43,38 +46,99 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     final authState = ref.watch(authNotifierProvider);
-    final isLoading = authState.maybeMap(loading: (_) => true, orElse: () => false);
-    final errorMessage = authState.maybeMap(
-      failure: (s) => s.message,
-      orElse: () => null,
+    final isLoading =
+        authState.maybeMap(loading: (_) => true, orElse: () => false);
+    final errorMessage =
+        authState.maybeMap(failure: (s) => s.message, orElse: () => null);
+
+    final formContent = _FormContent(
+      formKey: _formKey,
+      usernameController: _usernameController,
+      passwordController: _passwordController,
+      obscurePassword: _obscurePassword,
+      isLoading: isLoading,
+      errorMessage: errorMessage,
+      onToggleObscure: () =>
+          setState(() => _obscurePassword = !_obscurePassword),
+      onSubmit: _submit,
     );
 
     return Scaffold(
-      body: Row(
-        children: [
-          const Expanded(flex: 2, child: _BrandPanel()),
-          Expanded(
-            flex: 3,
-            child: _FormPanel(
-              formKey: _formKey,
-              usernameController: _usernameController,
-              passwordController: _passwordController,
-              obscurePassword: _obscurePassword,
-              isLoading: isLoading,
-              errorMessage: errorMessage,
-              onToggleObscure: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-              onSubmit: _submit,
-            ),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= _kTabletBreakpoint) {
+            return _TabletLayout(formContent: formContent);
+          }
+          return _MobileLayout(formContent: formContent);
+        },
       ),
     );
   }
 }
 
-// ─── Brand panel ─────────────────────────────────────────────────────────────
+// ─── Tablet layout: split brand / form ───────────────────────────────────────
 
+class _TabletLayout extends StatelessWidget {
+  const _TabletLayout({required this.formContent});
+
+  final _FormContent formContent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(flex: 2, child: _BrandPanel()),
+        Expanded(
+          flex: 3,
+          child: Container(
+            color: Colors.white,
+            child: Center(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 52, vertical: 40),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: formContent,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Mobile layout: stacked brand header + form ───────────────────────────────
+
+class _MobileLayout extends StatelessWidget {
+  const _MobileLayout({required this.formContent});
+
+  final _FormContent formContent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const _MobileBrandHeader(),
+        Expanded(
+          child: Container(
+            color: Colors.white,
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: formContent,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Brand variants ───────────────────────────────────────────────────────────
+
+/// Full-height brand panel for tablet split layout.
 class _BrandPanel extends StatelessWidget {
   const _BrandPanel();
 
@@ -89,49 +153,128 @@ class _BrandPanel extends StatelessWidget {
         ),
       ),
       child: const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.storefront_rounded, size: 96, color: Colors.white),
-            SizedBox(height: 28),
-            Text(
-              'Novedades',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w300,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-            ),
-            Text(
-              'MARITEX',
-              style: TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: 4,
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Sistema de Punto de Venta',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white60,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
+        child: _BrandContent(iconSize: 96, titleSize: 42, compact: false),
       ),
     );
   }
 }
 
-// ─── Form panel ──────────────────────────────────────────────────────────────
+/// Compact brand header for mobile single-column layout.
+class _MobileBrandHeader extends StatelessWidget {
+  const _MobileBrandHeader();
 
-class _FormPanel extends StatelessWidget {
-  const _FormPanel({
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(24, topPadding + 24, 24, 28),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1565C0), Color(0xFF0A3D8F)],
+        ),
+      ),
+      child: const _BrandContent(iconSize: 52, titleSize: 26, compact: true),
+    );
+  }
+}
+
+class _BrandContent extends StatelessWidget {
+  const _BrandContent({
+    required this.iconSize,
+    required this.titleSize,
+    required this.compact,
+  });
+
+  final double iconSize;
+  final double titleSize;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return compact
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.storefront_rounded, size: iconSize, color: Colors.white),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Novedades',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white70,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  Text(
+                    'MARITEX',
+                    style: TextStyle(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                  const Text(
+                    'Sistema de Punto de Venta',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white60,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.storefront_rounded, size: iconSize, color: Colors.white),
+              const SizedBox(height: 28),
+              const Text(
+                'Novedades',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  letterSpacing: 2,
+                ),
+              ),
+              Text(
+                'MARITEX',
+                style: TextStyle(
+                  fontSize: titleSize,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Sistema de Punto de Venta',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white60,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          );
+  }
+}
+
+// ─── Form content (shared by both layouts) ────────────────────────────────────
+
+class _FormContent extends StatelessWidget {
+  const _FormContent({
     required this.formKey,
     required this.usernameController,
     required this.passwordController,
@@ -153,51 +296,40 @@ class _FormPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 52, vertical: 40),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const _FormHeader(),
-                  const SizedBox(height: 36),
-                  if (errorMessage != null) ...[
-                    _ErrorBanner(message: errorMessage!),
-                    const SizedBox(height: 20),
-                  ],
-                  _UsernameField(
-                    controller: usernameController,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: 18),
-                  _PasswordField(
-                    controller: passwordController,
-                    obscure: obscurePassword,
-                    enabled: !isLoading,
-                    onToggle: onToggleObscure,
-                  ),
-                  const SizedBox(height: 36),
-                  _LoginButton(isLoading: isLoading, onPressed: onSubmit),
-                  const SizedBox(height: 20),
-                  const _ForgotPasswordButton(),
-                ],
-              ),
-            ),
+    return Form(
+      key: formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const _FormHeader(),
+          const SizedBox(height: 32),
+          if (errorMessage != null) ...[
+            _ErrorBanner(message: errorMessage!),
+            const SizedBox(height: 20),
+          ],
+          _UsernameField(
+            controller: usernameController,
+            enabled: !isLoading,
           ),
-        ),
+          const SizedBox(height: 16),
+          _PasswordField(
+            controller: passwordController,
+            obscure: obscurePassword,
+            enabled: !isLoading,
+            onToggle: onToggleObscure,
+          ),
+          const SizedBox(height: 32),
+          _LoginButton(isLoading: isLoading, onPressed: onSubmit),
+          const SizedBox(height: 16),
+          const _ForgotPasswordButton(),
+        ],
       ),
     );
   }
 }
 
-// ─── Sub-widgets ─────────────────────────────────────────────────────────────
+// ─── Sub-widgets ──────────────────────────────────────────────────────────────
 
 class _FormHeader extends StatelessWidget {
   const _FormHeader();
@@ -315,9 +447,7 @@ class _PasswordField extends StatelessWidget {
       ).copyWith(
         suffixIcon: IconButton(
           icon: Icon(
-            obscure
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             color: Colors.grey[500],
           ),
           onPressed: onToggle,
@@ -341,13 +471,14 @@ class _LoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 56,
+      height: 52,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF1565C0),
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF1565C0).withValues(alpha: 0.7),
+          disabledBackgroundColor:
+              const Color(0xFF1565C0).withValues(alpha: 0.7),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -379,7 +510,7 @@ class _ForgotPasswordButton extends StatelessWidget {
     return Center(
       child: TextButton(
         onPressed: () {
-          // TODO: Navigate — context.go('/auth/forgot-password');
+          // TODO: context.go('/auth/forgot-password');
         },
         child: Text(
           '¿Olvidaste tu contraseña?',
@@ -407,9 +538,7 @@ InputDecoration _fieldDecoration({
     filled: true,
     fillColor: const Color(0xFFF8F9FA),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(radius),
-    ),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius)),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(radius),
       borderSide: const BorderSide(color: Color(0xFFCED4DA)),

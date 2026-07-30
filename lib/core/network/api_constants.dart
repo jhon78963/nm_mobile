@@ -1,12 +1,13 @@
 /// Production API configuration constants.
 abstract final class ApiConstants {
-  static const String apiUrl = 'https://api.novedadesmaritex.net.pe/api';
+  /// Trailing slash is required so Dio resolves relative paths correctly.
+  /// Without it, paths starting with '/' would strip the '/api' segment.
+  static const String apiUrl = 'https://api.novedadesmaritex.net.pe/api/';
 
   static const int companyId = 1;
 
-  /// Laravel login endpoint (relative to [apiUrl]).
-  /// Change this constant if the backend route changes.
-  static const String loginPath = '/auth/login';
+  /// Relative paths must NOT start with '/' when baseUrl has a trailing slash.
+  static const String loginPath = 'auth/login';
 
   static const String accessTokenKey = 'auth_access_token';
 

@@ -2,6 +2,15 @@ import 'package:dio/dio.dart';
 
 /// Maps [DioException] to a human-readable [Exception] for the UI layer.
 Exception mapDioException(DioException error) {
+  if (error.type == DioExceptionType.connectionError ||
+      error.type == DioExceptionType.connectionTimeout ||
+      error.type == DioExceptionType.receiveTimeout ||
+      error.type == DioExceptionType.sendTimeout) {
+    return Exception(
+      'Sin conexión al servidor. Verifica tu internet e intenta nuevamente.',
+    );
+  }
+
   final statusCode = error.response?.statusCode;
   final backendMessage = _extractBackendMessage(error.response?.data);
 
