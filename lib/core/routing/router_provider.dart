@@ -8,6 +8,7 @@ import 'package:nm_mobile/features/auth/presentation/pages/auth_splash_page.dart
 import 'package:nm_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:nm_mobile/features/finances/presentation/pages/finance_placeholder_page.dart';
 import 'package:nm_mobile/features/pos/presentation/pages/pos_page.dart';
+import 'package:nm_mobile/features/sales/presentation/pages/sales_list_page.dart';
 import 'package:nm_mobile/features/shell/presentation/pages/app_shell_page.dart';
 import 'package:nm_mobile/features/shell/presentation/utils/shell_nav_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -74,11 +75,7 @@ GoRouter appRouter(Ref ref) {
             path: AppRoutes.sales,
             name: 'sales',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: FinancePlaceholderPage(
-                title: 'Ventas',
-                subtitle: 'Historial de ventas — próximamente.',
-                icon: Icons.receipt_long_outlined,
-              ),
+              child: SalesListPage(),
             ),
           ),
           GoRoute(
